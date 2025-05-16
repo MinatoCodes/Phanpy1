@@ -15,7 +15,7 @@ module.exports = {
     guide: { en: "Use {p}admin to reveal the creator's details. 🤫🗿" },
     creatorDetails: {
       name: "Itachi",
-      fbLink: "https://www.facebook.com/itachisenseihere?mibextid=ZbWKwL",
+      fbLink: "",
       photoLink: "https://i.ibb.co/dJGjmHXZ/image.jpg", // Replace with a valid photo URL
       videoLink: "https://raw.githubusercontent.com/zoro-77/video-hosting/main/cache/video-1735180380937-959.mp4", // Replace with a valid video URL
     },
