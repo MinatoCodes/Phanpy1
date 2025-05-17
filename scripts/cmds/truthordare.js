@@ -2,7 +2,7 @@ module.exports = {
 	config: {
 		name: "truthordare",
 		version: "1.1",
-		author: "NTKhang",
+		author: "Minato",
 		category: "fun",
 		shortDescription: {
 			en: "Play Truth or Dare game"
