@@ -2,6 +2,7 @@
 	config: {
 		name: "truthordare",
 		version: "1.0",
+		aliases: ["tord"],
 		author: "Minato",
 		category: "fun",
 		shortDescription: {
