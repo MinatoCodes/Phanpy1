@@ -1,7 +1,7 @@
-module.exports = {
+ module.exports = {
 	config: {
 		name: "truthordare",
-		version: "1.1",
+		version: "1.0",
 		author: "Minato",
 		category: "fun",
 		shortDescription: {
@@ -27,55 +27,46 @@ module.exports = {
 	},
 
 	onStart: async function ({ message, event, getLang }) {
-		// First ask the user to choose truth or dare
-		message.reply(getLang("choose"));
+		const msg = await message.reply(getLang("choose"));
 
-		// Create a callback to handle the user's response
-		const handleReply = ({ body, senderID }) => {
-			// Check if the reply is from the same user who triggered the command
-			if (senderID !== event.senderID) return;
-
-			const choice = body.trim().toLowerCase();
-			
-			// Remove the reply handler to avoid memory leaks
-			global.GoatBot.onReply.delete(event.messageID);
-			
-			if (choice !== "truth" && choice !== "dare") {
-				return message.reply(getLang("invalidChoice"));
-			}
-
-			this.getQuestion(choice, message, getLang);
-		};
-
-		// Store the reply handler
-		global.GoatBot.onReply.set(event.messageID, handleReply);
+		// Register reply handler
+		global.GoatBot.onReply.set(msg.messageID, {
+			commandName: this.config.name,
+			messageID: msg.messageID,
+			author: event.senderID
+		});
 	},
 
-	getQuestion: async function (choice, message, getLang) {
-		try {
-			let apiUrl;
-			if (choice === "dare") {
-				apiUrl = "https://dare-api-jlyv.onrender.com/";
-			}
-			else {
-				apiUrl = "https://truth-api.onrender.com/";
-			}
+	onReply: async function ({ message, event, Reply, getLang }) {
+		if (event.senderID !== Reply.author) return;
 
-			const response = await global.utils.getStreamFromURL(apiUrl);
-			const question = response?.question || response;
-			
-			if (!question) {
-				throw new Error("No question received from API");
+		const choice = event.body.trim().toLowerCase();
+
+		if (choice !== "truth" && choice !== "dare") {
+			return message.reply(getLang("invalidChoice"));
+		}
+
+		try {
+			const axios = require('axios');
+			const apiUrl = choice === "truth" 
+				? "https://truth-api.onrender.com/"
+				: "https://dare-api-jlyv.onrender.com/";
+
+			// Fetch JSON data from the API
+			const response = await axios.get(apiUrl);
+			const question = response.data?.data?.question;
+
+			if (!question || typeof question !== "string") {
+				throw new Error("Invalid or missing question in API response");
 			}
 
 			const langKey = choice === "truth" ? "truth" : "dare";
 			message.reply(getLang(langKey, question));
-		}
-		catch (err) {
-			console.error("Truth or Dare Error:", err);
+		} catch (err) {
+			console.error("Truth or Dare API Error:", err.message);
 			message.reply(getLang("error"));
-			
-			// Fallback questions if API fails
+
+			// Fallback questions
 			const fallback = {
 				truth: [
 					"What's the most embarrassing photo you have on your phone?",
@@ -88,7 +79,7 @@ module.exports = {
 					"Try to lick your elbow and send a video proof"
 				]
 			};
-			
+
 			const randomQuestion = fallback[choice][Math.floor(Math.random() * fallback[choice].length)];
 			const langKey = choice === "truth" ? "truth" : "dare";
 			message.reply(getLang(langKey, randomQuestion));
